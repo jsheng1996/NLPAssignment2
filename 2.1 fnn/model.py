@@ -33,8 +33,8 @@ class FNNModel(nn.Module):
         nn.init.zeros_(self.decoder.weight)
         nn.init.uniform_(self.decoder.weight, -initrange, initrange)
 
-    def forward(self, input, hidden):
-        emb = self.drop(self.encoder(input))
+    def forward(self, input):
+        emb = self.encoder(input)
         # output, hidden = self.rnn(emb, hidden)
         #add a linear layer here
         output = self.tanh(self.fc1(emb))
@@ -42,7 +42,7 @@ class FNNModel(nn.Module):
         # output = self.drop(output)
         decoded = self.decoder(output)
         decoded = decoded.view(-1, self.ntoken)
-        return F.log_softmax(decoded, dim=1), hidden
+        return F.log_softmax(decoded, dim=1)
 
     # def init_hidden(self, bsz):
     #     weight = next(self.parameters())

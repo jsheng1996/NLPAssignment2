@@ -13,7 +13,7 @@ import model
 parser = argparse.ArgumentParser(description='PyTorch Wikitext-2 RNN/LSTM/GRU/Transformer Language Model')
 parser.add_argument('--data', type=str, default='./data/wikitext-2',
                     help='location of the data corpus')
-parser.add_argument('--model', type=str, default='LSTM',
+parser.add_argument('--model', type=str, default='FNNModel',
                     help='type of recurrent net (RNN_TANH, RNN_RELU, LSTM, GRU, Transformer)')
 parser.add_argument('--emsize', type=int, default=200,
                     help='size of word embeddings')
@@ -96,14 +96,17 @@ test_data = batchify(corpus.test, eval_batch_size)
 ###############################################################################
 # Build the model
 ###############################################################################
-
+print(args.model)
 ntokens = len(corpus.dictionary)
 if args.model == 'Transformer':
     model = model.TransformerModel(ntokens, args.emsize, args.nhead, args.nhid, args.nlayers, args.dropout).to(device)
+elif args.model == 'FNNModel':
+  model = model.FNNModel(ntokens,args.emsize, args.nhid,args.nlayers,  args.dropout, args.tied).to(device)
 else:
     model = model.RNNModel(args.model, ntokens, args.emsize, args.nhid, args.nlayers, args.dropout, args.tied).to(device)
 
 criterion = nn.NLLLoss()
+print(model)
 
 ###############################################################################
 # Training code
@@ -140,7 +143,7 @@ def evaluate(data_source):
     model.eval()
     total_loss = 0.
     ntokens = len(corpus.dictionary)
-    if args.model != 'Transformer':
+    if args.model != 'Transformer' and args.model != 'FNNModel':
         hidden = model.init_hidden(eval_batch_size)
     with torch.no_grad():
         for i in range(0, data_source.size(0) - 1, args.bptt):
@@ -148,6 +151,8 @@ def evaluate(data_source):
             if args.model == 'Transformer':
                 output = model(data)
                 output = output.view(-1, ntokens)
+            elif args.model == 'FNNModel':
+                output= model(data)
             else:
                 output, hidden = model(data, hidden)
                 hidden = repackage_hidden(hidden)
@@ -161,7 +166,7 @@ def train():
     total_loss = 0.
     start_time = time.time()
     ntokens = len(corpus.dictionary)
-    if args.model != 'Transformer':
+    if args.model != 'Transformer' and args.model != 'FNNModel' :
         hidden = model.init_hidden(args.batch_size)
     for batch, i in enumerate(range(0, train_data.size(0) - 1, args.bptt)):
         data, targets = get_batch(train_data, i)
@@ -171,6 +176,8 @@ def train():
         if args.model == 'Transformer':
             output = model(data)
             output = output.view(-1, ntokens)
+        elif args.model == 'FNNModel':	
+	        output = model(data)
         else:
             hidden = repackage_hidden(hidden)
             output, hidden = model(data, hidden)
