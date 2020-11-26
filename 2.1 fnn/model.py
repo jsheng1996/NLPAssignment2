@@ -3,54 +3,56 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class FNNModel(nn.Module):
-    """Container module with an encoder, a recurrent module, and a decoder."""
+#Do not use this FNN model, use the one in the notebook instead
 
-    def __init__(self, ntoken, ninp, nhid, nlayers, dropout=0.5, tie_weights=False):
-        super(FNNModel, self).__init__()
-        self.ntoken = ntoken
-        self.drop = nn.Dropout(dropout)
-        self.encoder = nn.Embedding(ntoken, ninp)
+# class FNNModel(nn.Module):
+#     """Container module with an encoder, a recurrent module, and a decoder."""
+
+#     def __init__(self, ntoken, ninp, nhid, nlayers, dropout=0.5, tie_weights=False):
+#         super(FNNModel, self).__init__()
+#         self.ntoken = ntoken
+#         self.drop = nn.Dropout(dropout)
+#         self.encoder = nn.Embedding(ntoken, ninp)
      
-        #Declare all the layers here 
-        self.fc1 = torch.nn.Linear(ninp, nhid)
-        self.tanh = torch.nn.Tanh()
-        self.softmax = torch.nn.Softmax()
-        self.decoder = nn.Linear(nhid, ntoken)
+#         #Declare all the layers here 
+#         self.fc1 = torch.nn.Linear(ninp, nhid)
+#         self.tanh = torch.nn.Tanh()
+#         self.softmax = torch.nn.Softmax()
+#         self.decoder = nn.Linear(nhid, ntoken)
 
-        if tie_weights:
-            if nhid != ninp:
-                raise ValueError('When using the tied flag, nhid must be equal to emsize')
-            self.decoder.weight = self.encoder.weight
+#         if tie_weights:
+#             if nhid != ninp:
+#                 raise ValueError('When using the tied flag, nhid must be equal to emsize')
+#             self.decoder.weight = self.encoder.weight
 
-        self.init_weights()
-        self.nhid = nhid
-        self.nlayers = nlayers
+#         self.init_weights()
+#         self.nhid = nhid
+#         self.nlayers = nlayers
 
-    def init_weights(self):
-        initrange = 0.1
-        nn.init.uniform_(self.encoder.weight, -initrange, initrange)
-        nn.init.zeros_(self.decoder.weight)
-        nn.init.uniform_(self.decoder.weight, -initrange, initrange)
+#     def init_weights(self):
+#         initrange = 0.1
+#         nn.init.uniform_(self.encoder.weight, -initrange, initrange)
+#         nn.init.zeros_(self.decoder.weight)
+#         nn.init.uniform_(self.decoder.weight, -initrange, initrange)
 
-    def forward(self, input):
-        emb = self.encoder(input)
-        # output, hidden = self.rnn(emb, hidden)
-        #add a linear layer here
-        output = self.tanh(self.fc1(emb))
-        #remove the dropout for now 
-        # output = self.drop(output)
-        decoded = self.decoder(output)
-        decoded = decoded.view(-1, self.ntoken)
-        return F.log_softmax(decoded, dim=1)
+#     def forward(self, input):
+#         emb = self.encoder(input)
+#         # output, hidden = self.rnn(emb, hidden)
+#         #add a linear layer here
+#         output = self.tanh(self.fc1(emb))
+#         #remove the dropout for now 
+#         # output = self.drop(output)
+#         decoded = self.decoder(output)
+#         decoded = decoded.view(-1, self.ntoken)
+#         return F.log_softmax(decoded, dim=1)
 
-    # def init_hidden(self, bsz):
-    #     weight = next(self.parameters())
-    #     if self.rnn_type == 'LSTM':
-    #         return (weight.new_zeros(self.nlayers, bsz, self.nhid),
-    #                 weight.new_zeros(self.nlayers, bsz, self.nhid))
-    #     else:
-    #         return weight.new_zeros(self.nlayers, bsz, self.nhid)
+#     # def init_hidden(self, bsz):
+#     #     weight = next(self.parameters())
+#     #     if self.rnn_type == 'LSTM':
+#     #         return (weight.new_zeros(self.nlayers, bsz, self.nhid),
+#     #                 weight.new_zeros(self.nlayers, bsz, self.nhid))
+#     #     else:
+#     #         return weight.new_zeros(self.nlayers, bsz, self.nhid)
 
 
 class RNNModel(nn.Module):
